@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect, Component } from 'react';
 import logo from './assets/logo.jpg';
-import splash from './assets/splash.jpg';
+import splash from './assets/splash.png';
 import { Image, StyleSheet, Text, View , TouchableOpacity, Button} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     flex: 1, 
     alignItems: 'center', 
     justifyContent: 'center',
-    backgroundColor: 'floralwhite'
+    backgroundColor: 'whitesmoke'
   },
   logo: {
     width: 345,
