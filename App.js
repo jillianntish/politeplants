@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect, Component } from 'react';
 import logo from './assets/logo.png';
 import splash from './assets/splash.png';
-import { Alert, Modal, Image, StyleSheet, Text, TextInput, View , TouchableOpacity, TouchableHighlight,  Button} from 'react-native';
+import { Alert, Modal, Image, StyleSheet, Text, TextInput, View , TouchableOpacity, TouchableHighlight,  Button, SafeAreaView, FlatList} from 'react-native';
 import * as Permissions from 'expo-permissions';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
@@ -12,6 +12,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack'
 import * as Font from 'expo-font';
 import { FontAwesome , Ionicons, MaterialCommunityIcons} from '@expo/vector-icons';
+import ImagePlaceholder from 'react-native-image-with-placeholder'
+import dismissKeyboard from 'react-native-dismiss-keyboard';
 
 function HomeScreen({ navigation, route }) {
   return (
@@ -27,77 +29,124 @@ function HomeScreen({ navigation, route }) {
 }
 
 const Stack = createStackNavigator();
+const RootStack = createStackNavigator();
+/******************************************************************************************* */
 
-function Description({ navigation, route }) {
-  const [postText, setPostText] = React.useState('');
+function ModalScreen({ navigation, route }) {
+   const [postText, setPostText] = React.useState('');
+   const { selectedImage, photo } = route.params;
+
+  if(route.params?.selectedImage){
   return (
-    <>
+   
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={{ fontSize: 18 }}> Nursery  </Text> 
+    <Image source={{ uri: selectedImage.localUri }} style={{  width:250, height:300 }}
+      />
+      <>
       <TextInput
-        multiline
-        placeholder="how does your garden grow?"
+        multiline placeholder="eg. Thai Basil | 03/26/20201 | Part Sun"
         style={{ height: 200, padding: 10, backgroundColor: '#f5f5f5' }}
         value={postText}
         onChangeText={setPostText}
+        blurOnSubmit={true}
       />
-      
-      <Button
-        title="Done"
-        onPress={() => {
-          // Pass params back to home screen
-          navigation.navigate('Greenhouse', { post: postText });
-        }}
-      />
+      </>
+      <Button title="Save & Add to Garden" onPress={() => navigation.navigate('Gallery', { selectedImage:selectedImage, post:route.params?.post, photo:photo })} />
+      <Button onPress={() => navigation.goBack()} title="Dismiss" />
+    </View>
+  ) 
+} else if (route.params?.photo){
+    return (
+        
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ fontSize: 30 }}> What's Growing Well? </Text> 
+        <Image source={{ uri: photo.uri }} style={{width:250,height:300}}/>
+        <> 
+        <TextInput
+          multiline
+          placeholder="eg. Thai Basil | 03/26/20201 | Part Sun"
+          style={{ height: 200, padding: 10, backgroundColor: '#f5f5f5' }}
+          value={postText}
+          onChangeText={setPostText}
+          blurOnSubmit={true}
+        />
+        </>
+        <Button title="Save & Add to Garden" onPress={() => navigation.navigate('Gallery', { selectedImage:selectedImage, post:route.params?.post })} />
+      <Button onPress={() => navigation.goBack()} title="Dismiss" />
+    </View>
+  ) 
+} else {
+   return (
+  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ fontSize: 30 }}> What's Growing Well? </Text> 
+  <>
+    <TextInput
+      multiline
+      placeholder="how does your garden grow?"
+      style={{ height: 200, padding: 10, backgroundColor: '#f5f5f5' }}
+      value={postText}
+      onChangeText={setPostText}
+    />
     </>
-  );
-}
+    <Button title="Gallery" onPress={() => navigation.navigate('Gallery', { selectedImage:selectedImage, post:route.params?.post })} />
+      <Button onPress={() => navigation.goBack()} title="Dismiss" />
+    </View>
+)
+   }
+  };
 
+
+/******************************************************************************************* */
 
 
 function Greenhouse({ navigation, route }) {
   React.useEffect(() => {
     if (route.params?.post) {
-    console.log('params:' + params, 'route:' + route, 'post:' + post);
+    //console.log('params:' + params, 'route:' + route, 'post:' + post);
     }
   }, [route.params?.post]);
 
   // Saved Photo Selector
-  const [selectedImage, setSelectedImage] = React.useState(null);
-
+  const [selectedImage, setSelectedImage]  = React.useState(null);
   let openImagePickerAsync = async () => {
     let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
     if (permissionResult.granted === false) {
       alert("Permission to access camera roll is required!");
       return;
     }
-
     let pickerResult = await ImagePicker.launchImageLibraryAsync();
-    console.log('pickerRes:' + pickerResult);
-
     if (pickerResult.cancelled === true) {
       return;
     }
     setSelectedImage({ localUri: pickerResult.uri });
   }
-  
-  if (selectedImage !== null) {
+
+  //if no image selected, or no text entered, or if no image selected and there i
+  if (selectedImage !== null && !route.params?.post 
+     || selectedImage !== null && route.params?.post === null ) {
     return (
       <View style={styles.container}>
-        <Image source={{ uri: route.params?.photo.uri }} style={styles.logo}/>
-        <Button
-        title="Add a Description"
-        onPress={() => navigation.navigate('Description')}
-      />
+      <Image source={{ uri: selectedImage.localUri }} style={{ width:380, height:550 }} />
+      <Button onPress={() => navigation.navigate('MyModal', { selectedImage:selectedImage})} title="Add a Description" />
       <Text style={{ margin: 10 }}>{route.params?.post}</Text>
-       
-        <Button title="Back" onPress={() => navigation.goBack()} />
-         <Button
-        title="Greenhouse"
-        onPress={() => navigation.push('Greenhouse')}
-      />
+      <Button title="Root" onPress={() => navigation.goBack()} />
+      <Button title="Greenhouse" onPress={() => navigation.push('Greenhouse')} />
       </View>
       );
+  } else if (selectedImage !== null && route.params?.post) {
+    return (
+    <View style={styles.container}>
+    <Image source={{ uri: selectedImage.localUri }} style={{ width:380, height:550 }} />
+    <Button onPress={() => navigation.navigate('MyModal')} title="Add a Description" />
+    <Text style={{ margin: 10 }}>{route.params?.post}</Text>
+    <Button title="Root" onPress={() => navigation.goBack()} />
+    <Button title="Gallery" onPress={() => navigation.navigate('Gallery', { selectedImage:selectedImage, post:route.params?.post })}
+    />
+    </View>
+    );
   }  
+
   return (
     <View style={styles.container}>
       <Text style={styles.intro}>How's it growing?</Text>
@@ -112,24 +161,56 @@ function Greenhouse({ navigation, route }) {
   );
 }
 
-function Nursery({ navigation, route }) {
-  const { photo } = route.params;
-  return (
-  <View style={{ flex: 1, alignItems:'center',justifyContent:'center' }}>
-  
-  <Image source={{ uri: photo.uri }} style={{width:380,height:550}}/>
- </View>
-  );
-}
 
+/************************************************************************* */
+//TODO
+
+function Gallery({navigation, route}) {
+  const { post, photo, selectedImage } = route.params
+  const DATA = [ photo, selectedImage, post ]
+
+  const Item = ({ post}) => (
+    <View style={styles.item}>
+      <Text style={styles.title}>{post}</Text>
+    </View>
+  );
+
+  const renderItem = ({ item }) => (
+    <Item title={item} />
+  );
+
+
+
+  return (
+
+<SafeAreaView style={styles.listContainer}>
+<FlatList  
+// data={route.params}
+// numColumns={3}
+// renderItem={renderItem}
+// keyExtractor={({ item }) => this.renderItem(item)}
+// />
+// <Image source={item.selectedImage.localUri} style={styles.image}></Image>
+data={route.params}
+extraData={route.params}
+horizontal keyExtractor={selectedImage => selectedImage} //no idea if this is a good practice or not
+renderItem={({ item, index }) => {
+  console.log(picture); //this will log undefined for each item in list
+  console.log('hi'); //this will log for each item in list
+  return (
+     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Image source={{ uri: item}} style={{ width: 100, height: 100 }} />
+     </View>
+   );
+}} />
+</SafeAreaView>
+  );
+};
+/******************************************************************************************* */
 
 function CameraPermission( { navigation, route }){
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
-
-
-  const [modalVisible, setModalVisible] = useState(false);
-  
 
   useEffect(() => {
     (async () => {
@@ -142,60 +223,19 @@ function CameraPermission( { navigation, route }){
   if (hasPermission === false) { return <Text>No access to camera</Text>; }
 
   snap = async () => {
-      let photo = await this.camera.takePictureAsync({base64: true });
-      navigation.navigate('Nursery', { photo: photo});
-
-  //  setSelectedImage({ localUri: photo.uri });
-      //navigation.navigate('Greenhouse', { newPic: selectedImage });
+    // the base 64 setting enables the passage of the newly taken photo
+      let photo = await this.camera.takePictureAsync({ base64: true });
+      //then we pass the photo to a temporary container for review
+      // the 'navigate' method is key for passing the param back and forth through the routes
+      navigation.navigate('MyModal', { photo: photo});
     };
-
-  
-  onPictureSaved = photo => {
-  //  console.log(photo);
-  //  newPic = photo
-  if (photo.uri !== null){
-    return <View style={styles.centeredView}>
-          <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            Alert.alert('Modal has been closed.');
-          }}>
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-               
-
-              <Text style={styles.modalText}>Save Photo & Add Description?</Text>
-              <TouchableHighlight
-                style={{ ...styles.openButton, backgroundColor: '#2196F3' }}
-                onPress={() => {
-                  setModalVisible(!modalVisible);
-                }}>
-                <Text style={styles.textStyle}>Hide Modal</Text>
-              </TouchableHighlight>
-            </View>
-          </View>
-        </Modal>
-  
-        <TouchableHighlight
-          style={styles.openButton}
-          onPress={() => {
-            setModalVisible(true);
-          }}>
-          <Text style={styles.textStyle}>Show Modal</Text>
-        </TouchableHighlight>
-      </View>
-
-  }
-} 
 
   return (
     <View style={styles.container}>
       <Camera ref={ref => { this.camera = ref;}} style={styles.camera} type={type}>
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={styles.button}
+            syle={{ ...styles.openButton, backgroundColor: '#2196F3' }}
             onPress={() => {
               setType (
                 type === Camera.Constants.Type.back
@@ -203,53 +243,106 @@ function CameraPermission( { navigation, route }){
                   : Camera.Constants.Type.back
               );
             }}>
-            <Text style={styles.button}> Flip </Text>
+            <Text style={styles.textStyle}> Flip </Text>
           </TouchableOpacity>
           
         </View>
       </Camera>
-      <Button onPress={snap } style={styles.button} title="Snap"/>
- 
-
+      <Button onPress={snap } style={styles.openButton} title="Snap"/>
     </View>
     
   );
 }
-export default function App() {
+
+
+/********************************************************************/
+
+function Nursery({ navigation, route }) {
+  const { photo, post } = route.params;
+  const [modalVisible, setModalVisible] = useState(false);
+  const [postText, setPostText] = React.useState('');
+
 
   return (
-      <NavigationContainer>
-        <Stack.Navigator 
-                  mode="modal" 
-                  screenOptions={{
-                  headerStyle: {
-                    backgroundColor: '#F5F5F5',
-                  },
-                  headerTintColor: '#355e3b',
+
+  <View style={styles.centeredView}>
+          <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <TextInput
+                multiline
+                placeholder="how does your garden grow?"
+                style={{ width: 375, height: 300, padding: 10, backgroundColor: '#f5f5f5' }}
+                value={postText}
+                onChangeText={setPostText}
+                blurOnSubmit={true}
+              />
+
+              <Image source={{ uri: photo.uri }} style={{width:375,height:300}}/>
+              <Text style={styles.modalText}>Save Photo & Add Description?</Text>
+
+              <TouchableHighlight
+                style={{ ...styles.openButton, backgroundColor: '#2196F3' }}
+                onPress={() => {
+                  setModalVisible(!modalVisible);
                 }}>
-        <Stack.Screen
-                  name="Home"
-                  component={HomeScreen}
-                  options={{ title: 'Polite Plants', backgroundColor: '#F5F5F5' }}
-                />
-        <Stack.Screen 
-                name="Greenhouse" 
-                component={Greenhouse} 
-                options= {{ headerRight:() => (<Button
-                                              onPress={() => alert('This is a button!')}
-                                              title="Info"
-                                              color="#355e3b" />),
-                        }}
-          />
-  <Stack.Screen name="Description" component={Description}></Stack.Screen>
+                <Text style={styles.textStyle}>Done</Text>
+              </TouchableHighlight>
+            </View>
+          </View>
+        </Modal>
+
+        <TouchableHighlight
+      style={{ ...styles.openButton, backgroundColor: '#2196F3' }}
+      onPress={() => {navigation.goBack(); 
+        // navigation.goBack(); }
+        }}>
+      <Text style={styles.textStyle}>Take Another</Text>
+    </TouchableHighlight>
+        <Image source={{ uri: photo.uri }} style={{width:375 ,height:300}}/>
+        <TouchableHighlight
+          style={{ ...styles.openButton, backgroundColor: '#2196F3' }}
+          onPress={() => navigation.navigate('MyModal', { photo:photo                                })}>
+          <Text style={styles.textStyle}>Add A Description</Text>
+        </TouchableHighlight>
+      </View>
+
+  );
+}
+
+
+/************************************************************************* */
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator mode="modal" 
+        screenOptions={{
+        headerStyle: {
+          backgroundColor: '#F5F5F5',
+        },
+        headerTintColor: '#355e3b',
+      }} >
+      <Stack.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{ title: 'Polite Plants', backgroundColor: '#F5F5F5' }} />
+      <Stack.Screen 
+        name="Greenhouse" 
+        component={Greenhouse} 
+        options= {{ 
+          headerRight:() => (
+          <Button onPress={() => alert('This is a button!')} title="Info" color="#355e3b" />), }} />
+  <Stack.Screen name="Details" component={Description}></Stack.Screen>
   <Stack.Screen name="Pic" component={CameraPermission}></Stack.Screen>
   <Stack.Screen name="Nursery" component={Nursery}></Stack.Screen>
-          
+  <Stack.Screen name="Gallery" component={Gallery}></Stack.Screen>
+  <RootStack.Screen name="MyModal" component={ModalScreen} />
   </Stack.Navigator>
-  
- 
 </NavigationContainer>
-
   );
 }
 
@@ -360,4 +453,44 @@ const styles = StyleSheet.create({
       marginBottom: 15,
       textAlign: 'center',
     },
+    image: {
+      width: 250,
+      height: 150,
+      margin: 10,
+      },
+      flatListStyle: { flex: 1,},
+      listContainer: {
+        flex: 1,
+        marginTop: StatusBar.currentHeight || 0,
+      },
+      item: {
+        backgroundColor: '#f9c2ff',
+        padding: 20,
+        marginVertical: 8,
+        marginHorizontal: 16,
+      },
+      title: {
+        fontSize: 32,
+      },
+      button: {
+        backgroundColor: 'lightblue',
+        padding: 12,
+        margin: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 4,
+        borderColor: 'rgba(0, 0, 0, 0.1)',
+      },
+      modalContent: {
+        backgroundColor: 'white',
+        padding: 22,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 4,
+        borderColor: 'rgba(0, 0, 0, 0.1)',
+      },
+      bottomModal: {
+        justifyContent: 'flex-end',
+        margin: 0,
+      },
 });
