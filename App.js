@@ -35,66 +35,76 @@ const RootStack = createStackNavigator();
 function ModalScreen({ navigation, route }) {
    const [postText, setPostText] = React.useState('');
    const { selectedImage, photo } = route.params;
-
+  //
+  //
+  //if image is chosen from phone files
+  //
+  //
   if(route.params?.selectedImage){
   return (
-   
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ fontSize: 18 }}> Nursery  </Text> 
-    <Image source={{ uri: selectedImage.localUri }} style={{  width:250, height:300 }}
-      />
-      <>
-      <TextInput
-        multiline placeholder="eg. Thai Basil | 03/26/20201 | Part Sun"
-        style={{ height: 200, padding: 10, backgroundColor: '#f5f5f5' }}
-        value={postText}
-        onChangeText={setPostText}
-        blurOnSubmit={true}
-      />
-      </>
+      <Text style={{ fontSize: 18 }}> The Nursery  </Text> 
+        <Image source={{ uri: selectedImage.localUri }} style={{  width:250, height:300 }} />
+          <>
+            <TextInput
+              multiline placeholder="eg. Thai Basil | 03/26/20201 | Part Sun"
+              style={{ height: 200, padding: 10, backgroundColor: '#f5f5f5' }}
+              value={postText}
+              onChangeText={setPostText}
+              blurOnSubmit={true}
+            />
+          </>
       <Button title="Save & Add to Garden" onPress={() => navigation.navigate('Gallery', { selectedImage:selectedImage, post:route.params?.post, photo:photo })} />
-      <Button onPress={() => navigation.goBack()} title="Dismiss" />
+      <Button onPress={() => navigation.goBack()} title="Take Another Photo" />
+      <Button title="Back to Greenhouse" onPress={() => navigation.push('Greenhouse')} />
     </View>
-  ) 
-} else if (route.params?.photo){
-    return (
-        
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 30 }}> What's Growing Well? </Text> 
-        <Image source={{ uri: photo.uri }} style={{width:250,height:300}}/>
-        <> 
-        <TextInput
-          multiline
-          placeholder="eg. Thai Basil | 03/26/20201 | Part Sun"
-          style={{ height: 200, padding: 10, backgroundColor: '#f5f5f5' }}
-          value={postText}
-          onChangeText={setPostText}
-          blurOnSubmit={true}
-        />
-        </>
-        <Button title="Save & Add to Garden" onPress={() => navigation.navigate('Gallery', { selectedImage:selectedImage, post:route.params?.post })} />
-      <Button onPress={() => navigation.goBack()} title="Dismiss" />
-    </View>
-  ) 
+  ); 
+  //
+  //
+  //if a photo is taken instead
+  //
+  //
+} else if (route.params?.photo) {
+    return (    
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontSize: 30 }}> The Nursery </Text> 
+            <Image source={{ uri: photo.uri }} style={{ width:250, height:300 }}/>
+              <> 
+                <TextInput
+                  multiline placeholder="eg. Thai Basil | 03/26/20201 | Part Sun"
+                  style={{ height: 200, padding: 10, backgroundColor: '#f5f5f5' }}
+                  value={postText}
+                  onChangeText={setPostText}
+                  blurOnSubmit={true}
+                />
+              </>
+          <Button title="Save & Add to Garden" onPress={() => navigation.navigate('Gallery', { selectedImage:selectedImage, post:route.params?.post })} />
+          <Button onPress={() => navigation.navigate('Greenhouse')} title="Back to Greenhouse" />
+        </View>
+      ); 
+  //
+  //
+  //if just updating documentation
+  //
+  //
 } else {
-   return (
-  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 30 }}> What's Growing Well? </Text> 
-  <>
-    <TextInput
-      multiline
-      placeholder="how does your garden grow?"
-      style={{ height: 200, padding: 10, backgroundColor: '#f5f5f5' }}
-      value={postText}
-      onChangeText={setPostText}
-    />
-    </>
-    <Button title="Gallery" onPress={() => navigation.navigate('Gallery', { selectedImage:selectedImage, post:route.params?.post })} />
-      <Button onPress={() => navigation.goBack()} title="Dismiss" />
-    </View>
-)
-   }
-  };
+    return (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontSize: 30 }}> What's Growing Well? </Text> 
+            <>
+              <TextInput
+                multiline placeholder="eg. Thai Basil | 03/26/20201 | Part Sun"
+                style={{ height: 200, padding: 10, backgroundColor: '#f5f5f5' }}
+                value={postText}
+                onChangeText={setPostText}
+              />
+            </>
+          <Button title="Garden" onPress={() => navigation.navigate('Gallery', { selectedImage:selectedImage, post:route.params?.post })} />
+          <Button onPress={() => navigation.goBack()} title="Back to Greenhouse" />
+        </View>
+          )
+        }
+      };
 
 
 /******************************************************************************************* */
@@ -128,7 +138,7 @@ function Greenhouse({ navigation, route }) {
     return (
       <View style={styles.container}>
       <Image source={{ uri: selectedImage.localUri }} style={{ width:380, height:550 }} />
-      <Button onPress={() => navigation.navigate('MyModal', { selectedImage:selectedImage})} title="Add a Description" />
+      <Button onPress={() => navigation.navigate('MyModal', { selectedImage:selectedImage})} title="Add Documentation" />
       <Text style={{ margin: 10 }}>{route.params?.post}</Text>
       <Button title="Root" onPress={() => navigation.goBack()} />
       <Button title="Greenhouse" onPress={() => navigation.push('Greenhouse')} />
@@ -138,7 +148,7 @@ function Greenhouse({ navigation, route }) {
     return (
     <View style={styles.container}>
     <Image source={{ uri: selectedImage.localUri }} style={{ width:380, height:550 }} />
-    <Button onPress={() => navigation.navigate('MyModal')} title="Add a Description" />
+    <Button onPress={() => navigation.navigate('MyModal')} title="Add a Documentation" />
     <Text style={{ margin: 10 }}>{route.params?.post}</Text>
     <Button title="Root" onPress={() => navigation.goBack()} />
     <Button title="Gallery" onPress={() => navigation.navigate('Gallery', { selectedImage:selectedImage, post:route.params?.post })}
@@ -149,13 +159,14 @@ function Greenhouse({ navigation, route }) {
 
   return (
     <View style={styles.container}>
+    <Text style={{ fontSize: 18 }}> Welcome to the Greenhouse. </Text> 
       <Text style={styles.intro}>How's it growing?</Text>
       <Image source={logo} style={styles.logo} /> 
        <TouchableOpacity onPress={openImagePickerAsync} >
-        <Text style={styles.picButt}>Choose a photo</Text>
+        <Text style={styles.picButt}>Choose a Photo</Text>
       </TouchableOpacity> 
       <TouchableOpacity onPress={ () => navigation.push('Pic')}>
-        <Text style={styles.picButt}>Take a photo</Text>
+        <Text style={styles.picButt}>Take a Photo</Text>
       </TouchableOpacity> 
     </View>
   );
@@ -256,7 +267,7 @@ function CameraPermission( { navigation, route }){
 
 
 /********************************************************************/
-
+/*
 function Nursery({ navigation, route }) {
   const { photo, post } = route.params;
   const [modalVisible, setModalVisible] = useState(false);
@@ -283,7 +294,7 @@ function Nursery({ navigation, route }) {
               />
 
               <Image source={{ uri: photo.uri }} style={{width:375,height:300}}/>
-              <Text style={styles.modalText}>Save Photo & Add Description?</Text>
+              <Text style={styles.modalText}>Document specimen and add to garden?</Text>
 
               <TouchableHighlight
                 style={{ ...styles.openButton, backgroundColor: '#2196F3' }}
@@ -312,7 +323,7 @@ function Nursery({ navigation, route }) {
       </View>
 
   );
-}
+}*/
 
 
 /************************************************************************* */
@@ -336,9 +347,8 @@ export default function App() {
         options= {{ 
           headerRight:() => (
           <Button onPress={() => alert('This is a button!')} title="Info" color="#355e3b" />), }} />
-  <Stack.Screen name="Details" component={Description}></Stack.Screen>
   <Stack.Screen name="Pic" component={CameraPermission}></Stack.Screen>
-  <Stack.Screen name="Nursery" component={Nursery}></Stack.Screen>
+  {/* <Stack.Screen name="Nursery" component={Nursery}></Stack.Screen> */}
   <Stack.Screen name="Gallery" component={Gallery}></Stack.Screen>
   <RootStack.Screen name="MyModal" component={ModalScreen} />
   </Stack.Navigator>
